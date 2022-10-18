@@ -1,0 +1,462 @@
+<html>
+<head>
+<title>MRFM Cantilever Control using FPGA</title>
+</head>
+
+<body>
+
+<h2>MRFM Cantilever Control using FPGA</h2>
+
+<p>
+<a href="http://staff.washington.edu/jon/index.html">Jon Jacky</a>,
+University of Washington, Quantum System Engineering (QSE) Laboratory.
+Revised Mar 2009, add link to RSI page.
+
+<!---
+<p>
+Sep 2007 &nbsp; Begun with rudimentary <tt>mrfm.rbf</tt>, <tt>mrfm_fft.py</tt><br>
+Apr 2008 &nbsp; Replace with much richer <tt>mrfm.rbf</tt>, <tt>cserver.py</tt>, <tt>cclient.py</tt> etc.<br>
+-->
+
+ 
+<hr>
+
+<p>
+This page provides files and directions for assembling and using an
+FPGA-based cantilever controller for Magnetic Resonance Force
+Microscopy (MRFM), using the commercially available USRP hardware and
+the open-source GNU Radio software, along with some additional
+software that we have written.  In addition to the controller itself,
+we also provide software here to demonstrate how the controller can be
+integrated into an experiment.
+
+<!-- LabView ... -->
+
+<p>
+A 
+<a href="http://link.aip.org/link/?RSINAK/79/123705/1">paper</a>
+about this controller appeared in 
+<em>Review of Scientific Instruments</em>.  
+The <a href="http://arxiv.org/abs/0809.1403">preprint</a>
+is available at the arXiv server.
+</p>
+
+<p>
+<a href="#intro">Introduction</a>
+<a href="#hw">Hardware</a>
+<a href="#sw">Software</a>
+<a href="#prereq">Prerequisites</a>
+<a href="#download">Download</a>
+<a href="#install">Installation</a>
+<a href="#demo">Demonstration</a>
+<a href="#license">License</a>
+<a href="#ack">Acknowledgments</a>
+
+<h3><a name="intro">Introduction</h3>
+
+<p>
+Cantilevers for MRFM are micromechanical oscillators that require
+feedback control.  The controller damps the cantilever, resulting in
+smaller deflections, faster ringdown, and wider bandwidth than an
+uncontrolled cantilever.  This is necessary for acquiring an image
+during an MRFM experiment.  In the apparatus shown here, the
+cantilever controller would be connected between RX and TX in the
+lower right corner (RX is the controller input). 
+
+ <!-- Links to theory
+papers -->
+
+<p>
+Cantilever controller design is discussed
+<a href="http://link.aip.org/link/?JAPIAU/80/1951/1">here</a>,
+<a href="http://link.aip.org/link/?JAPIAU/80/1959/1">here</a>,
+and <a href="http://link.aip.org/link/?JAPIAU/83/3972/1">here</a>.
+An MRFM experiment is described
+<a href="http://link.aip.org/link/?RSINAK/75/1175/1">here</a>.
+A brief explanation of MRFM appears
+<a href="http://lists.gnu.org/archive/html/discuss-gnuradio/2005-01/msg00232.html">here</a>.
+
+<p>
+<a name="mrfm-block">
+<img src="mrfm-block-cropped.jpg"><br>
+
+<p>
+The controller we provide here accommodates input and output signals
+up to 2 volts peak-to-peak (-1V to +1v), digitized with a resolution
+of 12 bits (input) and 14 bits (output), sampled at up to 64 MHz.  The
+demonstration provided here samples at 500 kHz, chosen for acoustic
+cantilevers with resonant frequencies near 8 kHz.  The controller
+includes an IIR digital filter comprising two cascaded second-order
+sections ("biquads"), which can implement transfer functions with up
+to 4 numerator and 4 denominator coefficients.  The signal and the
+filter coefficients are represented by 24-bit integers (our software
+translates floating point to appropriately scaled 24-bit integers).
+
+<p>
+In addition to the filter, the controller also includes an input
+multiplexer and adder that selects and optionally adds two input
+signals in all combinations.  This is helpful for some
+calibration protocols.
+
+<p>
+The controller characteristics (filter coefficients, multiplexer
+settings etc.) can be set and continually adjusted from experiment
+control software.
+
+<h3><a name="hw">Hardware</h3>
+
+<p>
+This photo shows a typical collection of equipment that can
+demonstrate the controller, an example of the block labeled "on lab
+bench" in the diagram <a href="#mrfm-block">above</a> (on the right).
+The two essential components are the USRP (lower left) and the
+computer (lower right).  The test equipment behind the USRP and
+computer is optional.
+
+<p>
+<a name="hw-photo">
+<img src="gr-tf.jpg" width=400 height=300>
+
+<p>
+The USRP is the GNU Radio hardware component, which includes the FPGA
+and the data converters (ADCs and DACs).  The cantilever signals
+connect to the terminals on the USRP front panel.  The controller
+program (filter and multiplexer) executes on the FPGA in the USRP.
+Technical information about the USRP is available <a
+href="http://www.gnuradio.org/trac/wiki/USRP">here</a> and
+<a href="http://www.ettus.com/index.html">here</a>.
+A USRP
+motherboard with daughterboards is shown <a
+href="gnuradio_board.jpg">here</a>.
+
+<p>
+This photo shows our USRP in a homemade enclosure.  The commercially
+available USRP package now includes a case so it is no longer
+necessary to make one.
+
+<p>
+The computer, called the <em>host computer</em>, is connected to the
+USRP by the USB 2.0 bus.  The host computer stores the controller
+program that runs on the FPGA.  Before an experiment, the host
+computer is commanded to load the controller program into the FPGA.
+During an experiment, the host computer executes experiment control
+software that can continually adjust controller parameters and
+acquire the measured signals.  
+
+<p>
+This photo shows a Macintosh but almost any computer with a USB 2.0
+port should work.
+
+<h3><a name="sw">Software</h3>
+
+<p>
+The controller itself (the mulitplexor and digital filter) executes on
+the FPGA in the USRP.  It is written in the Verilog hardware
+description language (HDL).  The several Verilog source files are
+compiled or <em>synthesized</em> into a single binary file called a
+<em>bitstream</em> which is stored on the host computer and loaded
+into the FPGA on command.  The host computer can store several
+bitstreams that provide different controller capabilities
+and load them into the FPGA under program control.
+
+<p>
+We provide both the compiled bitstream and the Verilog source files
+and for our controller.  The controller also uses Verilog files from
+the open-source GNU Radio project.  Only the bitstream is needed to
+run the controller.  The Verilog files will be useful if you wish to
+customize the controller or develop your own.
+
+<p>
+The experiment control software including calibration protocols, data
+acquisition and storage, calculation of desired controller
+characteristics, etc., executes on the host computer.  
+
+<p>
+The host software is organized as a client and server.  The client
+comprises most of the experiment control, while the server is a small
+component that copes with the details of the controller and its
+interface.  For example, the client calculates the desired transfer
+function of the controller, expressed as floating point coefficients
+for an IIR digital filter.  The server refactors these coefficients
+for cascaded second-order sections ("biquads"), translates them to
+scaled 24-bit integers, and loads them into particular registers in
+the controller using the USB 2.0 interface.  The client
+software does not depend on controller details such as filter
+architecture, hardware organization, number representation, and
+connection technology.  Thanks to this organization, our experiment
+control software is largely unchanged from earlier versions that used
+completely different controller technology based on a digital signal
+processor (DSP).
+
+<p>
+Client and server communicate by sending text messages over a TCP/IP
+socket connection.  They can execute on the same computer or
+different computers (we have used both configurations).  
+
+<!--  We don't need these details here --
+Protocol, messages ...  Client -> server: two kinds, filter coeffs and
+multiplexer settings ...  Server -> client: one message, simple ack.
+-->
+
+<p>
+The server also performs data acquisition, acquiring the stream of
+digitized samples from the FPGA at two points in the signal path, at
+the input and output of the digital filter.  The server can optionally
+display these data as a spectrum or as a time series on an
+oscilloscope-like display, as shown in the photo <a
+href="#hw-photo">above</a> and the screen shot <a href="#noise">below</a>.
+
+<p>
+We provide the complete server software.  It is written in Python and
+uses the open-source GNU Radio system and the open-source SciPy
+scientific computing package.  
+
+<p>
+We provide a simple client for demonstrations and diagnostics.  It is
+also written in Python, and also depends on SciPy (but not GNU Radio).
+
+<p>
+We also provide a very simple client extracted from our MRFM
+experiment control software.  It is written in LabView, and is
+sufficient to demonstrate communication with the server.  This client
+is a LabView virtual instrument (VI) which could be incorporated into
+a different experiment.  The LabView client does not depend on GNU
+Radio nor SciPy.
+
+<h3><a name="prereq">Prerequisites</h3>
+
+<ul>
+<li>
+<p>
+Obtain the USRP hardware, including
+the LFRX and LFTX daughterboards, from 
+<a href="http://www.ettus.com/index.html">here</a>.
+</li>
+<li>
+<p>
+Obtain and install the GNU Radio software, as described
+<a href="http://gnuradio.org/trac/wiki/GettingStarted">here</a>.
+</li>
+<li>
+<p>
+Obtain and install the SciPy software, as described
+<a href="http://www.scipy.org/Download">here</a>.
+</li>
+</ul>
+
+<p>
+Additional information about our GNU Radio and SciPy installations on the Mac
+appear
+<a href="http://staff.washington.edu/jon/gr-osx/gr-osx.html">here</a>.
+
+<h3><a name="download">Download</h3>
+
+<p>
+Download the archive file: &nbsp;
+<a href="http://staff.washington.edu/jon/gr-mrfm/gr-mrfm.tar">
+<tt>gr-mrfm.tar</tt></a>  &nbsp;
+
+<p>
+The archive contains a directory gr-mrfm populated with
+several subdirectories:
+
+<ul>
+<li>
+<p>
+The bin directory contains command scripts.
+</li>
+<li>
+<p>
+The python directory contains most of the host software,
+including the server and its library modules, and the Python client.
+</li>
+<li>
+<p>
+The mrfm24 directory contains the controller software,
+including mrfm.rbf, the bitstream that is loaded into the FPGA.  It
+also contains the Verilog source files and other files used to
+synthesize the bitstream.
+</li>
+<li>
+<p>
+The labview directory contains the LabView client.
+</li>
+</ul>
+
+<p>
+The complete archive contents are listed <a
+href="gr-mrfm-manifest.txt">here</a>.
+
+<h3><a name="install">Installation</h3>
+
+<p>
+The following instructions are for Unix-like systems, including Mac
+OS X.  Some adjustments may be necessary on your system, especially to
+accommodate your GNU Radio installation.
+
+<ol>
+<li>
+<p>
+Unpack the archive.  It is convenient to unpack the archive in your
+home directory.
+</li>
+<li>
+<p>
+Prepare to invoke the commands.  It is convenient to put the
+gr-mrfm/bin directory in your path, or copy its contents to a
+directory already in your path, such as ~/bin.  
+</li> 
+<li>
+<p>
+Check that the paths in the command scripts (in the bin directory)
+will work with your installation. Change them if needed.
+
+<p>
+The gr-defs script defines PYTHONPATH with the path to the
+Python files in your GNU Radio installation.  If you already arranged
+to define PYTHONPATH when you installed GNU Radio, you may not need
+gr-defs.
+
+<p>
+The cserver-restart script defines CSERVER_DIR, the path to the Python
+directory for our MRFM software.  If you did not unpack the archive
+under your home directory, you must change this definition.  
+</li>
+<li>
+<p>
+If you are using a Macintosh, in the python directory rename
+cserver-cmd.mac to cserver-cmd.
+</li>
+<li>
+<p>
+Copy the bitstream mrfm.rbf to a directory in your GNU Radio
+installation where the USRP can find it.  Typically, this would be
+gr/share/usrp/rev4, along with the other .rbf files.
+</li>
+</ol>
+
+<h3><a name="demo">Demonstration</h3>
+
+<p>
+To load the controller into the FGPA:
+
+<ol>
+<li>
+<p>
+Connect the USRP to one of the host computer's USB 2.0 ports.
+</li>
+<li>
+<p>
+Invoke gr-defs, if that is needed to make the GNU Radio software
+available in this session.  Alternatively, when you installed GNU
+Radio you may have arranged to make it available in every session.
+</li>
+<li>
+<p>
+Invoke cserver-restart to start the server.
+This in turn invokes cserver-cmd in the python directory, which
+finally invokes the server program cserver.py with particular command
+line options, including port number 6340.  The server writes a few
+lines of messages to the terminal window and waits for a client to
+connect to that port. 
+</li>
+<li>
+<p>
+Start the Python client program, specifying the server's port: &nbsp; 
+<tt>python cclient.py 6340</tt> 
+</li>
+<li>
+<p>
+At the cclient prompt, type <tt>m 1 0</tt>.  This sends a message to
+the server containing multiplexer settings.  The server commands the
+controller to connect the signal at the USRP LFRX A input.  The server
+should write messages indicating that the message was received.  (When
+the server begins running, it commands both controller multiplexer
+switches to open, so no input signal reaches the filter.)  
+</li> 
+<li>
+<p>
+At the cclient prompt, type <tt>p  params_8khz.h</tt> 
+This sends a message to the server containing the contents of the
+named file.  The server reads the filter
+coefficients in the message, refactors and translates them, and loads
+them into the controller.  The message contents (and the file) specify
+a transfer function appropriate for an MRFM cantilever with a resonant
+frequency near 8 kHz.
+(When the server begins running, it commands the controller to load a
+unity gain filter, so the controller output is the same as the input
+from the multiplexer.)
+</li>
+<li>
+<p>
+To optionally demonstrate the LabView client, open SendController.vi.
+Each time you click Run Once on its front panel, this VI sends a
+message with the same contents as params_8khz.h.  (You can run cclient
+and the LabView client at the same time, because both clients open and
+close the socket connection each time they send a message.)  </li>
+</ol>
+
+<p>
+To measure the controller transfer function, connect a signal
+generator to the LFRX input and an oscilloscope to the LFTX output, as
+shown in the photo <a href="#hw-photo">above</a>.  The transfer
+function measured when the controller is loaded with the contents of
+<tt>params_8khz.h</tt> appears <a href="tf_params_8khz.jpg">here</a>.
+The effect of this controller can be seen by applying noise to the LFRX
+input and viewing the filter input and output on the server's
+oscilloscope-like display, as shown in this screen shot:
+
+<!-- <a href="gr-oscope-noise.png">here</a>. --> 
+
+<p>
+<a name="noise">
+<img src="gr-oscope-noise.png" width="373" height="330"> 
+
+<p>
+There are several variants of cserver-cmd in the python directory,
+that invoke the server with different command-line options:
+
+<p>
+<table>
+<tr><td>cserver-cmd.mac</td>
+ <td>For Macintosh, use pythonw not python</td></tr>
+<tr><td>cserver-cmd.no-scope &nbsp;</td>
+ <td>Run without oscilloscope display, to 
+reduce load on host computer</td></tr>
+<tr><td>cserver-cmd.no-usrp</td>
+ <td>Run without USRP hardware, to demonstrate or debug client/server communication</td><tr>
+</table>
+
+<p>
+The many command-line options for the server are described
+<a href="cserver-options.txt">here</a>.  The options for the Python client
+are described <a href="cclient-options.txt">here</a>.
+
+<h3><a name="license">Provenance and licensing</h3>
+
+<p>
+The software provided here is based on the MRFM project included in
+the GNU Radio distribution
+<a href="http://gnuradio.org/trac/browser/gnuradio/trunk/usrp/fpga/toplevel/mrfm">here</a>.
+
+<p>
+The files from this site (at the University of Washington) are not
+included in the GNU Radio distribution.  (Files with the same name
+have different contents).  However, the licensing terms are the same:
+the GNU General Public License.  See the headers in the source files
+in the software itself.
+
+<h3><a name="ack">Acknowledgments</h3>
+
+<p>
+This work was done with Joseph Garbini, John Sidles, Joseph Malcomb,
+and Matt Ettus.  This work was supported by the Army Research Office
+(ARO) Multi-University Research Initiative (MURI) W911NF-05-1-0403.
+
+<hr>
+
+<p>
+<a href="http://staff.washington.edu/jon/index.html">Jon Jacky</a>,
+<em class="email">email: jon at u dot washington dot edu</em>
+
+</body></html>

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# cserver-restart, kill running cserver if present, then start cserver
+# Requires this script and gr-defs in ~/bin or elsewhere on path
+# Requires cserver.py and cserver-cmd in CSERVER_DIR
+# Requires cserver-cmd contains "python cserver.py ..." with all switches
+# Requires this script, gr-defs, cserver-cmd all executable, chmod 755 ...
+
+CSERVER_DIR=~/gr-mrfm/python
+
+pid=`ps -a -o pid -o command | awk '$3 == "cserver.py" { print $1 }'`
+if [ -n "$pid" ]  # nonzero length
+then
+   echo "cserver is already running, kill it and restart"
+   kill -9 $pid
+else
+   echo "cserver is not running, start it"
+fi
+source gr-defs
+pushd $CSERVER_DIR   # cserver-cmd and cserver.py are there
+source cserver-cmd   # source ... so pushd is effective
+popd

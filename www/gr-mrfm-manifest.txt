@@ -1,0 +1,38 @@
+This is gr-mrfm-manifest.txt from http://staff.washington.edu/jon/gr-mrfm/
+
+The MRFM controller and host software are distributed in the archive
+file gr-mrfm.tar.  Its contents are:
+
+  gr-mrfm
+  gr-mrfm/bin
+  gr-mrfm/bin/cserver-restart
+  gr-mrfm/bin/gr-defs
+  gr-mrfm/labview
+  gr-mrfm/labview/SendController.vi
+  gr-mrfm/mrfm24
+  gr-mrfm/mrfm24/acc24.v
+  gr-mrfm/mrfm24/adc_switch.v
+  gr-mrfm/mrfm24/biquad_2stage.v
+  gr-mrfm/mrfm24/mrfm.csf
+  gr-mrfm/mrfm24/mrfm.esf
+  gr-mrfm/mrfm24/mrfm.psf
+  gr-mrfm/mrfm24/mrfm.qpf
+  gr-mrfm/mrfm24/mrfm.qsf
+  gr-mrfm/mrfm24/mrfm.rbf
+  gr-mrfm/mrfm24/mrfm.v
+  gr-mrfm/mrfm24/mrfm.vh
+  gr-mrfm/mrfm24/mrfm_proc.v
+  gr-mrfm/mrfm24/mult24.v
+  gr-mrfm/mrfm24/ram24.v
+  gr-mrfm/mrfm24/shifter24.v
+  gr-mrfm/python
+  gr-mrfm/python/cclient.py
+  gr-mrfm/python/cserver-cmd
+  gr-mrfm/python/cserver-cmd.mac
+  gr-mrfm/python/cserver-cmd.no-oscope
+  gr-mrfm/python/cserver-cmd.no-usrp
+  gr-mrfm/python/cserver.py
+  gr-mrfm/python/mrfm.py
+  gr-mrfm/python/params.py
+  gr-mrfm/python/params_8khz.h
+  gr-mrfm/python/tf.py

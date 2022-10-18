@@ -1,0 +1,17 @@
+cclient takes one optional command line argument, the server port number
+The default is port 8000.  
+
+$ python cclient.py 6340
+Type command + data, h for help, RETURN to exit: h
+At the prompt, type one-character command followed by data
+ h (or unrecognized cmd): help, print commands, data ignored
+ ?: send uninterpreted data (string) to server
+ !: send string, then close connection without reading server response
+ z: zero output always (open loop), data ignored
+ k: output is scaled input, data is gain
+ f: first order low-pass filter, data is corner frequency
+ s: second order low-pass filter, data is resonant frequency
+ t: transfer function, data is b coeffs, comma, then a coeffs
+ m: scale factors, data are k0 k1, usually 0 or 1
+ p: read from file in params.h format, data is filename
+ x (or RETURN, empty line): exit, data ignored

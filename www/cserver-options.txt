@@ -1,0 +1,38 @@
+$ python cserver.py --help
+usage: cserver.py [options]
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         Verbose output
+  -D, --debug           Debug mode, some exceptions cause traceback and exit
+  -pPORT, --port=PORT   port number [default=8000]
+  -RRX_SUBDEV_SPEC, --rx-subdev-spec=RX_SUBDEV_SPEC
+                        select USRP Rx side A or B (default=first one
+                        with a daughterboard)
+  -dDECIM, --decim=DECIM
+                        set fgpa decimation rate to DECIM
+                        [default=%default]
+  -fFREQ, --freq=FREQ   set frequency to FREQ
+  -gGAIN, --gain=GAIN   set RxPGA gain in dB, 0..20 dB (default is midpoint)
+  -GTXGAIN, --txgain=TXGAIN
+                        set TxPGA gain, 0..255 is -20..0 dB
+                        [default=%default]
+  -8, --width-8         Enable 8-bit samples across USB
+  -S, --oscilloscope    Enable oscilloscope display
+  -T, --fft             Enable FFT display
+  -W, --waterfall       Enable waterfall display
+  -FFILENAME, --filename=FILENAME
+                        Name of file with filter coeffs, sos format
+  -PPFILENAME, --pfilename=PFILENAME
+                        Name of file with filter coeffs, params.h format
+  -QFRAC_BITS, --frac_bits=FRAC_BITS
+                        fraction bits in data path [default=22]
+  -qCOEFF_FRAC_BITS, --coeff_frac_bits=COEFF_FRAC_BITS
+                        fraction bits in filter coeffs [default=22]
+  -CCFILENAME, --cfilename=CFILENAME
+                        Name of file with compensator coefficients
+  -BBITSTREAM, --bitstream=BITSTREAM
+                        Name of FPGA Bitstream file (.rbf)
+  -nFRAME_DECIM, --frame-decim=FRAME_DECIM
+                        set oscope frame decimation factor to n
+                        [default=20]
