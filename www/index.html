@@ -151,7 +151,8 @@ port should work.
 
 <p>
 The controller itself (the mulitplexor and digital filter) executes on
-the FPGA in the USRP.  It is written in the Verilog hardware
+the FPGA in the USRP.  It is written in the 
+<a href="verilog-prog.html">Verilog</a> hardware
 description language (HDL).  The several Verilog source files are
 compiled or <em>synthesized</em> into a single binary file called a
 <em>bitstream</em> which is stored on the host computer and loaded
@@ -252,13 +253,8 @@ appear
 <h3><a name="download">Download</h3>
 
 <p>
-Download the archive file: &nbsp;
-<a href="http://staff.washington.edu/jon/gr-mrfm/gr-mrfm.tar">
-<tt>gr-mrfm.tar</tt></a>  &nbsp;
-
-<p>
-The archive contains a directory gr-mrfm populated with
-several subdirectories:
+This <a href="https://github.com/jon-jacky/gr-mrfm/">gr-mrfm repository</a>
+contains several subdirectories:
 
 <ul>
 <li>
@@ -284,8 +280,7 @@ The labview directory contains the LabView client.
 </ul>
 
 <p>
-The complete archive contents are listed <a
-href="gr-mrfm-manifest.txt">here</a>.
+The repository contents are listed <a href="gr-mrfm-manifest.txt">here</a>.
 
 <h3><a name="install">Installation</h3>
 
@@ -297,8 +292,8 @@ accommodate your GNU Radio installation.
 <ol>
 <li>
 <p>
-Unpack the archive.  It is convenient to unpack the archive in your
-home directory.
+Clone the gr-mrfm repository.  It is convenient to clone the
+repository in your home directory.
 </li>
 <li>
 <p>
@@ -319,7 +314,7 @@ gr-defs.
 
 <p>
 The cserver-restart script defines CSERVER_DIR, the path to the Python
-directory for our MRFM software.  If you did not unpack the archive
+directory for our MRFM software.  If you did not clone the repository
 under your home directory, you must change this definition.  
 </li>
 <li>
