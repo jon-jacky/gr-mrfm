@@ -1,0 +1,192 @@
+<html>
+<head>
+<title>Notes on Verilog programming</title>
+</head>
+
+<body bgcolor="#ffffff">
+
+<h2>Notes on Verilog programming</h2>
+
+<p>
+<a href="index.html">Jonathan Jacky</a>, 
+2006 -- 2007, revised May 2008: add link to recent MRFM project page.
+
+<!-- <code>...</code> looks nicer than ... -->
+
+<hr>
+
+<p>
+I recently learned Verilog to program an FPGA with digital filters for a
+<a href="http://staff.washington.edu/jon/gr-mrfm/">project</a>
+(also
+<a href="http://lists.gnu.org/archive/html/discuss-gnuradio/2005-01/msg00232.html">here</a> and
+<a href="http://www.research.cornell.edu/KIC/events/MRFM2006/pdfs/Jacky%20talk/jacky-talk.html">here</a>).
+
+<p>
+There are important differences between Verilog (or any hardware
+description language) and conventional (software only) programming:
+
+<ul>
+
+<li>Distinction between simulation and synthesis, with different
+programming styles and tool chains for each.
+
+<li>Distinction between structural and behavioral code --- but the same
+functionality can be expressed either way.
+
+<li>Parallel execution at the module, block, and statement level.
+
+</ul>
+
+<p>
+I use 
+<a href="http://www.icarus.com/eda/verilog/">Icarus</a> 
+and 
+<a href="http://home.nc.rr.com/gtkwave/">GTKWave</a> 
+for simulation, 
+<a href="https://www.altera.com/support/software/download/altera_design/quartus_we/dnl-quartus_we.jsp">Quartus</a> 
+for synthesis.
+
+<p>
+In embedded systems, the advantage of using FPGAs and Verilog (or any
+programmable hardware and HDL), rather than a conventional processor
+and programming language, is parallelism and simplicity.  With FPGAs
+and Verilog you can always add more functions in parallel with no
+penalty in speed or complexity: just use more modules, more pins, and
+(if needed) more (or bigger) FPGA chips.  All modules run in parallel
+at full speed; their execution does not share a single processor; it
+is true concurrency, not interleaving concurrency as on one or a few
+processors.  There is no need for any processes or threads, nor any
+need to synchronize among them, nor any need for an operating system at all.
+
+<p>
+The biggest difference from conventional programming is not the
+language, but the development method.  We have only very limited
+ability to observe and debug synthesized Verilog code, compared to a
+conventional program.  We must do most debugging in simulation.
+Simulation requires a testbed that simulates the input signals.  The
+usual way to obtain this is to also write it in Verilog. But simulation may
+not be conclusive; the same code can behave differently in simulation
+than when synthesized, due to limitations in the testbed and quirks in
+the tools.
+
+<p>
+There don't seem to be any classic books 
+(<a href="http://groups.google.com/group/comp.lang.lisp/msg/1ae7c4b7af0603ff?hl=en">like K&R for C</a>)
+so the beginning Verilog programmer has to build on understanding
+gained from previous experience.  Two kinds are needed.
+
+<p>
+Software experience helps us understand:
+
+<ul>
+
+<li>Behavioral code.  Here Verilog is similar to most programming
+languages, except for the parallelism.  Verilog syntax is similar to
+C.  For example, see this mostly 
+<a
+href="http://gnuradio.org/trac/browser/gnuradio/trunk/usrp/fpga/toplevel/mrfm/biquad_2stage.v">behavioral
+code</a>
+
+
+<li>Binding. Verilog binding of wires to ports is similar to the
+binding of arguments to parameters in a conventional programming language.
+
+<li>Instances. Verilog modules and instances are similar
+to classes and instances in object-oriented programming.  
+Multiple instances of the same Verilog module can exist at the same
+time.
+
+</ul>
+
+Hardware experience helps us understand:
+
+<ul>
+<li>Structural code.  Here Verilog is a textual representaton of
+a circuit diagram, including the parallelism.  Each Verilog module
+describes a kind of circuit, each instance of a module is another distinct
+example of that circuit (that occupies actual real estate in the
+device when synthesized). For example, compare this 
+<a
+href="http://gnuradio.org/trac/browser/gnuradio/trunk/usrp/fpga/toplevel/mrfm/mrfm_proc.v">structural code</a> 
+to the block diagram labeled <em>Heterodyne control</em> on this
+<a href="http://www.research.cornell.edu/KIC/events/MRFM2006/pdfs/Jacky%20talk/jacky-talk.html">page</a>.
+
+<li>Combinational logic and data flow.  Verilog continuous assigment
+to wires.
+
+<li>Clocked logic and synchronization.  Verilog procedural assignment
+to registers.
+
+</ul>
+
+<p>
+My impression is that, instead of books, experienced Verilog programmers mostly refer to 
+<a
+href="http://gnuradio.org/trac/browser/gnuradio/trunk/usrp/fpga/toplevel/mrfm/mrfm_proc.v">examples</a> 
+(<a
+href="http://gnuradio.org/trac/browser/gnuradio/trunk/usrp/fpga/toplevel/mrfm/biquad_2stage.v">etc.</a>)
+and short references like these:
+
+<h3><a name="ref">References</h3>
+
+<p>
+EE382 Verilog Manual by Y.N. Patt (short but very helpful)<br>
+<a href="http://users.ece.utexas.edu/~patt/04s.382N/tutorial/verilog_manual.html">
+<tt>http://users.ece.utexas.edu/~patt/04s.382N/tutorial/verilog_manual.html</tt></a>
+</p>
+
+<p>
+Verilog@Everything2.com (another short tutorial)<br>
+<a href="http://everything2.com/index.pl?node=Verilog">
+<tt>http://everything2.com/index.pl?node=Verilog</tt></a>
+</p>
+
+<p>
+CSCI Computer Architecture Handbook on Verilog HDL (somewhat longer)<br>
+<a href="http://www.csl.cornell.edu/courses/ee475/verilog-manual.html">
+<tt>http://www.csl.cornell.edu/courses/ee475/verilog-manual.html</tt></a>
+</p>
+
+<p>
+Verilog HDL On-line Quick Reference<br>
+<a href="http://www.sutherland-hdl.com/on-line_ref_guide/vlog_ref_body.html">
+<tt>http://www.sutherland-hdl.com/on-line_ref_guide/vlog_ref_body.html</tt></a>
+</p>
+
+<p>
+Verilog Quick Reference (extremely terse)<br>
+<a href="http://www.asic-world.com/verilog/vqref1.html">
+<tt>http://www.asic-world.com/verilog/vqref1.html</tt></a>
+</p>
+
+<p>
+Verilog HDL Quick Reference Card, Qualis Design Corp. (terse, PDF)<br>
+<a href="http://www.ee.lsu.edu/v/refcard.pdf">
+<tt>http://www.ee.lsu.edu/v/refcard.pdf</tt></a>
+</p>
+
+<p>
+Verilog interview questions and answers<br>
+<a href="http://asic.co.in/Index_files/verilog_interview_questions2.htm">
+<tt>http://asic.co.in/Index_files/verilog_interview_questions2.htm</tt></a>
+</p>
+
+<p>
+"Verilog", Chapter 9, pages 207 -- 235 in Thimmannagari, Chandra
+M. R., <em>CPU Design : Answers to Frequently Asked Questions</em>.
+New York : Springer, 2005 (has many short but nontrivial examples)
+</p>
+
+<p>
+The most interesting full-length book I've seen is
+
+<p>
+Kilts, Steve, <em>Advanced FPGA Design: Architecture, Implementation,
+Optimization</em>.  Wiley, 2007
+</p>
+
+</body>
+
+</html>
+
